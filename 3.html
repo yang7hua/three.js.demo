@@ -1,0 +1,94 @@
+<html>
+
+<head>
+    <title></title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="./three.min.js"></script>
+    <script>
+        var scene, camera, renderer;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000);
+
+            camera.position.set(0, 12, 28);
+            camera.lookAt(scene.position);
+            //camera.lookAt(new THREE.Vector3(0,0,0));
+
+            document.body.appendChild(renderer.domElement);
+        }
+
+        function initObject1() {
+            var geometry = new THREE.Geometry();
+            var texture = THREE.ImageUtils.loadTexture('/learning-threejs/assets/textures/particles/snowflake2.png');
+            var material = new THREE.PointCloudMaterial({
+                size: 2,
+                vertexColors: true,
+                color: 0xffffff,
+                map: texture
+            });
+            var range = 500;
+            for (var x = 0; x <= 2500; x++) {
+                var v = new THREE.Vector3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2);
+                geometry.vertices.push(v);
+                //geometry.colors.push(new THREE.Color(Math.random() * 0x00ffff));
+                geometry.colors.push(new THREE.Color(0xffffff));
+            }
+            var cloud = new THREE.PointCloud(geometry, material);
+            scene.add(cloud);
+        }
+
+        function createMesh(geometry, map, normalMap, envMap) {
+            var material = new THREE.MeshPhongMaterial();
+            var texture = THREE.ImageUtils.loadTexture('/learning-threejs/assets/textures' + map);
+            material.map = texture;
+            if (normalMap) {
+                var normalTexture = THREE.ImageUtils.loadTexture('/learning-threejs/assets/textures' + normalMap);
+                material.normalMap = normalTexture;
+            }
+            if (envMap) {
+                material.envMap = createCubeTexture(envMap);
+            }
+            return new THREE.Mesh(geometry, material);
+        }
+
+        function createCubeTexture(image)
+        {
+            var texture = THREE.ImageUtils.loadTexture('/learning-threejs/assets/textures/'+image, new THREE.UVMapping());
+        }
+
+        function initObject() {
+            var sphere = createMesh(new THREE.SphereGeometry(10, 50, 50), '/planets/earth.jpg');
+            sphere.position.set(0, 0, 0);
+            sphere.name = 'earth';
+            scene.add(sphere);
+
+            var ambi = new THREE.AmbientLight(0xffffff);
+            scene.add(ambi);
+
+        }
+
+        init();
+        initObject();
+        function render() {
+            renderer.render(scene, camera);
+            //camera.position.z -= 0.1;
+            scene.getObjectByName('earth').rotation.y += 0.01;
+            requestAnimationFrame(render);
+        }
+        render();
+    </script>
+</body>
+
+</html>
